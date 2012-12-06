@@ -1,0 +1,15 @@
+﻿<Window x:Class="Simple.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MS Fest" Height="600" Width="600">
+	<Canvas>
+		<TextBlock Text="MS-Fest" />
+		<Image Name="_image"
+					 Canvas.Left="12"
+					 Canvas.Top="50"
+					 Width="644"
+					 Height="210"
+					 Source="res\rximage.png" />
+
+	</Canvas>
+</Window>

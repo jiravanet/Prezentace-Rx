@@ -1,0 +1,289 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1024" />
+
+		<title>Rx v UI</title>
+    <meta name="description" content="Rx v UI" />
+    <meta name="author" content="Jarda Jirava" />
+    <link href="css/impress-demo.css" rel="stylesheet" />
+    <style type="text/css">
+h1 {
+	background-color: #999;
+	width: 100%;
+	color: #fff;
+	padding: 15px;
+}
+h3 {
+	background-color: #ddd;
+	width: 100%;
+	padding: 6px;
+}
+p, ul {
+	font-size: 80%;
+}
+p.autor {
+	text-align: right;
+	margin-top: 400px;
+}
+ul li {
+	padding: 6px;
+}
+
+pre {
+	font-size: 60%;
+	font-family: courier;
+	margin: 6px;
+	line-height: 1.5em;
+}
+
+pre code {
+	margin: 6px;	
+}
+    </style>
+</head>
+<body class="impress-not-supported">
+
+	<div class="fallback-message">
+		<p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+		<p>For the best experience please use the latest <b>Chrome</b>, <b>Safari</b> or <b>Firefox</b> browser.</p>
+	</div>
+
+	<div id="impress">
+		<!-- PAGE -->
+		<div id="Intro" class="step slide" data-x="-1000" data-y="-1500">
+			<h1>Rx v UI</h1>
+			<p class="autor">Jarda Jirava<br />jarda@jirava.net<br />@jiravanet</p>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Agenda" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Agenda</h2>
+			<ul>
+				<li>Co je Rx</li>
+				<li>IObserver a IObservable</li>
+				<li>Observable vs. Enumerable</li>
+				<li>Základní zdroje</li>
+				<li>Rx operátory</li>
+				<li>Marble diagram</li>
+				<li>ObserveOn vs. SubscribeOn</li>
+				<li>DEMO</li>
+				<li>Model-View-ViewModel</li>
+				<li>Testování</li>
+			</ul>
+		</div>
+
+		<!-- PAGE -->
+		<div id="CoJeRx" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Co je Rx</h2>
+			<ul>
+				<li>Způsob jak zacházet s asynchronními událostmi</li>
+				<li>Zpracovávat více datových streamů</li>
+				<li>Komponovat událostní programy pomocí <i>observable collection</i></li>
+			</ul>
+			<ul>
+				<li>Cílem je zpracovat asynchronní a událostně řízené operace jednodušeji - čitelněji</li>
+				<li>Kód by měl být snadněji pochopitelný a udržitelný</li>
+				<li>Observable collection - kolekce dat, které nemusí být k dispozici od prvního okamžiku</li>
+			</ul>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div3" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>IObserver a IObservable</h2>
+			<ul>
+				<li>Vychází z Observer návrhového vzoru</li>
+				<li>IObservable = představuje zdroj dat</li>
+				<li>IObserver = rezprezentuje zainteresovanou stranu, která požaduje data a umí je zpracovat</li>
+			</ul>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div4" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>IObserver a IObservable</h2>
+			<pre><code>public interface IObservable&lt;out T&gt;
+{
+IDisposable Subscribe(IObserver&lt;T&gt; observer);
+}				</code>
+			</pre>
+			<pre><code>public interface IObserver&lt;in T&gt;
+{
+void OnCompleted();
+void OnError(Exception error);
+void OnNext(T value);
+}				</code>
+			</pre>
+			<p>Představují duál k IEnumerable a IEnumerator</p>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div1" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Observable vs. Enumerable</h2>
+			<ul>
+				<li><strong>Enumerable kolekce</strong> mají data k dispozici v okamžiku, kdy s nimi chcete začít pracovat - princip, kdy si data vyzvedáváte "pull" v okamžiku, kdy jste připraveni k jejich zpracování</li>
+				<li><strong>Observable kolekce</strong> mohou získat data postupně v průběhu zacházení s kolekcí - jedná se o tvz. "future collection" a data jsou "natlačena" ke zpracovateli v okamžiku, kdy jsou k dispozici</li>
+			</ul>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div5" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Observable vs. Enumerable</h2>
+			<pre><code>var ints = Enumerable.Range(1, 10);
+var query = from i in ints
+						where i % 2 == 0
+						select i;
+IEnumerator&lt;int&gt; e = query.GetEnumerator();
+while(e.MoveNext())
+{
+	e.Current.Dump();
+}</code></pre>
+<hr />
+			<pre><code>var ints = Observable.Range(1, 10);
+ints.
+	Where(e => e % 2 == 0).
+	Subscribe(e =&gt; Console.WriteLine("Next element " + e.ToString()),
+						ex =&gt; Console.WriteLine("Error occured " + ex.Message),
+						() =&gt; Console.WriteLien("Completed"));</code></pre>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div6" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Základní zdroje</h2>
+			<ul>
+				<li><strong>Return</strong> - vytvoří kolekci o jedné hodnotě</li>
+				<li><strong>Empty</strong> - vytvoří prázdnou kolekci = okamžitě je zavoláno OnCompleted</li>
+				<li><strong>Never</strong> - vytvoří nekončící kolekci = nikdy není zavoláno OnNext</li>
+				<li><strong>Range</strong> - vytvoří seznam o daném počtu prvků</li>
+				<li><strong>FromEventPattern</strong> - vytvoří kolekci z událostí</li>
+				<li><strong>FromAsyncPattern</strong> - vytvoří kolekci dat z asynchronní události</li>
+			</ul>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div7" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Rx operátory</h2>
+			<ul>
+				<li>Rx obsahuje desítky operátorů (extenzních metod)</li>
+				<li>Některé z nich jsou ekvivalentní s LINQ operátory</li>
+				<li><i>Take, Skip, Distinct, Zip, ...</i></li>
+				<li>Některé z nich jsou pouze pro Rx</li>
+				<li><i>Merge, Concat, Catch, OnErrorResumeNext, ...</i></li>
+			</ul>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div8" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Marble diagram</h2>
+			<ul>
+				<li>Grafická reprezentace jak probíhá zpracování observable kolekce jednotlivými operátory</li>
+				<li>Sequence je reprezentována jako horizontální čára</li>
+				<li>Čas jde zleva doprava</li>
+				<li>Notifikace jsou reprezentovány symboly</li>
+				<li>&nbsp;<strong>0</strong> pro <i>OnNext</i></li>
+				<li>&nbsp;<strong>X</strong> pro <i>OnError</i></li>
+				<li>&nbsp;<strong>|</strong> pro <i>OnCompleted</i></li>
+				<li>Konkurentní zpracování jsou prezentována několika souběžnými čarami</li>
+			</ul>
+			<pre>
+			<code title="OnErrorResumeNext">
+I1: --0--0--X
+I2: ----------0--0--0-|
+O : --0--0----0--0--0-|
+			</code>
+			</pre>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div9" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>ObserveOn vs. SubscribeOn</h2>
+			<ul>
+				<li><strong>ObserveOn</strong> - na jakém vlákně bude provedeno zpracování metod OnNext, OnError, OnCompleted<br />Vhodné především při práci s UI</li>
+				<li><strong>SubscribeOn</strong> - přijímá Scheduler, který určuje, kdy a kde se bude daná činnost vykonávat</li>
+			</ul>
+			<h3>Scheduler</h3>
+			<ul>
+				<li>Dostupnost závislá od konkrétní platformy (WPF, Silverlight, WinRT) - System.Reactive.PlatformService</li>
+				<li>Je k dispozici přibližně 10 schedulerů</li>
+				<li><i>CurrentThreadScheduler, ControlScheduler, DispatcherScheduler, NewThreadScheduler, TaskPoolScheduler, ...</i></li>
+			</ul>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div10" class="step slide" data-x="-1000" data-y="-1500">
+		<h2>Drag and Drop</h2>
+		<p class="demo">Demo</p>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div11" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>FromAsynPattern</h2>
+			<p class="demo">Demo</p>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div12" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Klasické zpracování</h2>
+			<p class="demo">Demo</p>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div13" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Model-View-ViewModel</h2>
+			<ul>
+				<li>Jak zapojit Rx do aplikace využívající MVVM</li>
+			</ul>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div14" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Model-View-ViewModel</h2>
+			<ul>
+				<li>Jak zapojit Rx do aplikace využívající MVVM</li>
+				<li>ReactiveUI (by Paul Betts)</li>
+				<li>ReactiveObject a ReactiveValidatedObject</li>
+				<li>ReactiveCommand a ReactiveAsyncCommand</li>
+				<li>ObservableAsPropertyHelper</li>
+				<li>StopwatchTestScheduler</li>
+			</ul>
+		</div>
+
+		<!-- PAGE -->
+		<div id="Div15" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Testování</h2>
+			<ul>
+				<li></li>
+			</ul>
+		</div>
+
+<!-- PAGE -->
+		<div id="Div16" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Q&amp;A - Zdroje</h2>
+			<ul>
+				<li>http://msdn.microsoft.com/en-us/data/gg577609</li>
+				<li>http://msdn.microsoft.com/en-us/data/gg577611</li>
+				<li>http://msdn.microsoft.com/en-us/data/gg577612</li>
+				<li>http://msdn.microsoft.com/en-us/library/hh242985%28v=VS.103%29.aspx</li>
+				<li>http://msdn.microsoft.com/en-us/data/gg577609</li>
+				<li>http://www.introtorx.com/</li>
+				<li>Forum</li>
+				<li>http://social.msdn.microsoft.com/Forums/en-US/rx/threads</li>
+			</ul>
+		</div>
+
+	<div id="Div17" class="step slide" data-x="-1000" data-y="-1500">
+			<h2>Děkuji za pozornost</h2>
+		</div>
+	</div>
+	<div class="hint">
+			<p>Use a spacebar or arrow keys to navigate</p>
+	</div>
+	<script type="text/javascript">
+		if ("ontouchstart" in document.documentElement) {
+			document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+		}
+	</script>
+	<script type="text/javascript" src="js/impress.js"></script>
+	<script type="text/javascript">	impress().init();</script>
+</body>
+</html>
